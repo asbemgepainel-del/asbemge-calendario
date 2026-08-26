@@ -1,0 +1,252 @@
+@import "tailwindcss";
+
+:root {
+  --background: #ffffff;
+  --foreground: #171717;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+}
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+}
+
+/* ============================================================
+   Admin (/admin) — verde-tinta profundo, dourado, tipografia Fraunces
+   Portado fielmente do protótipo asbemge-calendario.jsx
+   ============================================================ */
+.asb-root {
+  --bg: #12211b;
+  --bg-elev: #1a2e26;
+  --bg-elev-2: #213a30;
+  --line: rgba(243, 238, 225, 0.12);
+  --line-strong: rgba(243, 238, 225, 0.22);
+  --ink: #f3eee1;
+  --ink-dim: #a9b5ac;
+  --gold: #c9a227;
+  --gold-soft: rgba(201, 162, 39, 0.16);
+  --wine: #b24a5b;
+  --wine-soft: rgba(178, 74, 91, 0.16);
+  --field: #4e8c5b;
+  --alert: #d97757;
+  --alert-soft: rgba(217, 119, 87, 0.18);
+  --font-display: var(--font-fraunces), serif;
+  --font-body: var(--font-inter), sans-serif;
+  --font-mono: var(--font-plex-mono), monospace;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font-body);
+  min-height: 100%;
+}
+.asb-root * {
+  box-sizing: border-box;
+}
+.asb-root ::selection {
+  background: var(--gold-soft);
+}
+.asb-scroll::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+.asb-scroll::-webkit-scrollbar-thumb {
+  background: var(--line-strong);
+  border-radius: 4px;
+}
+.asb-btn {
+  font-family: var(--font-body);
+  font-weight: 500;
+  font-size: 13px;
+  border-radius: 8px;
+  padding: 8px 14px;
+  cursor: pointer;
+  border: 1px solid var(--line-strong);
+  background: transparent;
+  color: var(--ink);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.15s ease;
+}
+.asb-btn:hover {
+  background: rgba(243, 238, 225, 0.06);
+  border-color: var(--ink-dim);
+}
+.asb-btn:focus-visible {
+  outline: 2px solid var(--gold);
+  outline-offset: 2px;
+}
+.asb-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.asb-btn-primary {
+  background: var(--gold);
+  color: #201a05;
+  border-color: var(--gold);
+}
+.asb-btn-primary:hover {
+  background: #ddb53a;
+}
+.asb-input,
+.asb-select,
+.asb-textarea {
+  width: 100%;
+  background: var(--bg);
+  border: 1px solid var(--line-strong);
+  color: var(--ink);
+  border-radius: 8px;
+  padding: 9px 10px;
+  font-family: var(--font-body);
+  font-size: 13.5px;
+}
+.asb-input:focus,
+.asb-select:focus,
+.asb-textarea:focus {
+  outline: none;
+  border-color: var(--gold);
+}
+.asb-label {
+  font-size: 11.5px;
+  color: var(--ink-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin-bottom: 5px;
+  display: block;
+}
+.asb-card {
+  background: var(--bg-elev);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+}
+.asb-row-hover {
+  display: flex;
+  text-decoration: none;
+  color: inherit;
+  transition: background 0.15s ease;
+}
+.asb-row-hover:hover {
+  background: rgba(243, 238, 225, 0.05);
+}
+
+/* ============================================================
+   Dashboard público (/) — azul institucional + dourado, estilo BI
+   Portado fielmente do protótipo asbemge-dashboard-publico.jsx
+   ============================================================ */
+.abd-root {
+  --navy-900: #061b33;
+  --navy-800: #0c2c4f;
+  --navy-700: #15406b;
+  --navy-050: #eaf0f8;
+  --gold-700: #8a5b00;
+  --gold-600: #c98a00;
+  --gold-500: #f0a202;
+  --gold-100: #fceacb;
+  --bg: #f4f6f9;
+  --surface: #ffffff;
+  --line: #e3e7ee;
+  --line-strong: #cbd2de;
+  --ink: #10233f;
+  --ink-dim: #667085;
+  --font-display: var(--font-sora), sans-serif;
+  --font-body: var(--font-inter), sans-serif;
+  --font-mono: var(--font-plex-mono), monospace;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font-body);
+  min-height: 100%;
+  display: flex;
+}
+.abd-root * {
+  box-sizing: border-box;
+}
+.abd-scroll::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+.abd-scroll::-webkit-scrollbar-thumb {
+  background: var(--line-strong);
+  border-radius: 4px;
+}
+.abd-chip {
+  font-family: var(--font-body);
+  font-weight: 500;
+  font-size: 12.5px;
+  border-radius: 999px;
+  padding: 7px 14px;
+  cursor: pointer;
+  border: 1px solid var(--line-strong);
+  background: var(--surface);
+  color: var(--ink);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.15s ease;
+}
+.abd-chip:hover {
+  border-color: var(--navy-700);
+}
+.abd-chip:focus-visible {
+  outline: 2px solid var(--navy-700);
+  outline-offset: 2px;
+}
+.abd-icon-btn {
+  border: 1px solid var(--line-strong);
+  background: var(--surface);
+  border-radius: 8px;
+  width: 32px;
+  height: 32px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: var(--ink);
+  flex-shrink: 0;
+}
+.abd-icon-btn:hover {
+  border-color: var(--navy-700);
+}
+.abd-card {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+}
+.abd-nav-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  border-radius: 9px;
+  cursor: pointer;
+  color: rgba(244, 246, 249, 0.65);
+  font-size: 13.5px;
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  transition:
+    background 0.15s ease,
+    color 0.15s ease;
+}
+.abd-nav-item:hover {
+  background: rgba(244, 246, 249, 0.07);
+  color: #fff;
+}
+.abd-nav-item.active {
+  background: var(--gold-500);
+  color: #221600;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .asb-root *,
+  .abd-root * {
+    transition: none !important;
+  }
+}

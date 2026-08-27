@@ -254,8 +254,8 @@ export default function PublicDashboard({ events }: { events: EventWithLocation[
 
           {view === "calendario" && (
             <div>
-              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14 }}>
-                <div style={{ display: "flex", gap: 8 }}>
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8, flexWrap: "wrap", marginBottom: 14 }}>
+                <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
                   {(["todos", "esportivo", "social"] as CatFilter[]).map((c) => (
                     <button
                       key={c}

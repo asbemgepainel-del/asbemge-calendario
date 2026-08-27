@@ -243,6 +243,22 @@ body {
   background: var(--gold-500);
   color: #221600;
 }
+.abd-spotlight {
+  width: 420px;
+  max-width: 92vw;
+}
+@media (max-width: 640px) {
+  .abd-spotlight-overlay {
+    align-items: flex-end;
+    padding: 0;
+  }
+  .abd-spotlight {
+    width: 100%;
+    max-width: 100%;
+    max-height: 92vh;
+    border-radius: 16px 16px 0 0;
+  }
+}
 
 @media (prefers-reduced-motion: reduce) {
   .asb-root *,

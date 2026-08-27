@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Image from "next/image";
 import {
   CalendarDays,
@@ -35,15 +35,28 @@ const MONTH_NAMES = [
    Arte do evento — imagem enviada (attachment_url) ou pôster SVG
    gerado nas cores do clube como placeholder.
    ============================================================ */
-function EventArt({ event, height = 190 }: { event: EventWithLocation; height?: number }) {
+function EventArt({
+  event, height = 190, orientation = "landscape",
+}: {
+  event: EventWithLocation;
+  height?: number;
+  orientation?: "landscape" | "portrait";
+}) {
+  const isPortrait = orientation === "portrait";
+
   if (event.attachment_url) {
     return (
-      <div style={{ position: "relative", width: "100%", height, overflow: "hidden" }}>
+      <div
+        style={{
+          position: "relative", width: "100%", overflow: "hidden",
+          ...(isPortrait ? { aspectRatio: "3 / 4" } : { height }),
+        }}
+      >
         <Image
           src={event.attachment_url}
           alt={event.title}
           fill
-          sizes="400px"
+          sizes={isPortrait ? "480px" : "400px"}
           style={{ objectFit: "cover" }}
         />
       </div>
@@ -56,20 +69,33 @@ function EventArt({ event, height = 190 }: { event: EventWithLocation; height?: 
   const bg1 = isGold ? "#0C2C4F" : "#0A2038";
   const bg2 = isGold ? "#123B63" : "#15406B";
   const accent = "#F0A202";
+  const w = isPortrait ? 320 : 400;
+  const h = isPortrait ? 420 : 220;
+
   return (
-    <svg viewBox="0 0 400 220" width="100%" height={height} style={{ display: "block" }} preserveAspectRatio="xMidYMid slice">
+    <svg
+      viewBox={`0 0 ${w} ${h}`}
+      width="100%"
+      height={isPortrait ? undefined : height}
+      style={isPortrait ? { display: "block", aspectRatio: `${w} / ${h}` } : { display: "block" }}
+      preserveAspectRatio="xMidYMid slice"
+    >
       <defs>
         <linearGradient id={`grad-${event.id}`} x1="0" y1="0" x2="1" y2="1">
           <stop offset="0%" stopColor={bg1} />
           <stop offset="100%" stopColor={bg2} />
         </linearGradient>
       </defs>
-      <rect width="400" height="220" fill={`url(#grad-${event.id})`} />
-      {[...Array(6)].map((_, i) => (
-        <circle key={i} cx={40 + i * 65} cy={30 + (i % 2) * 150} r={i % 2 === 0 ? 70 : 46} fill={accent} opacity="0.06" />
-      ))}
-      <rect x="0" y="0" width="400" height="220" fill="none" stroke={accent} strokeOpacity="0.35" strokeWidth="6" />
-      <g transform="translate(28,132)">
+      <rect width={w} height={h} fill={`url(#grad-${event.id})`} />
+      {[...Array(6)].map((_, i) =>
+        isPortrait ? (
+          <circle key={i} cx={40 + (i % 2) * 240} cy={60 + i * 65} r={i % 2 === 0 ? 70 : 46} fill={accent} opacity="0.06" />
+        ) : (
+          <circle key={i} cx={40 + i * 65} cy={30 + (i % 2) * 150} r={i % 2 === 0 ? 70 : 46} fill={accent} opacity="0.06" />
+        ),
+      )}
+      <rect x="0" y="0" width={w} height={h} fill="none" stroke={accent} strokeOpacity="0.35" strokeWidth="6" />
+      <g transform={isPortrait ? "translate(28,330)" : "translate(28,132)"}>
         <circle cx="18" cy="18" r="18" fill={accent} opacity="0.16" />
         <foreignObject x="4" y="4" width="28" height="28">
           <div style={{ width: 28, height: 28, display: "flex", alignItems: "center", justifyContent: "center" }}>
@@ -77,10 +103,10 @@ function EventArt({ event, height = 190 }: { event: EventWithLocation; height?: 
           </div>
         </foreignObject>
       </g>
-      <text x="28" y="180" fill="#F4F6F9" fontFamily="var(--font-display)" fontWeight={700} fontSize="19">
+      <text x="28" y={isPortrait ? 380 : 180} fill="#F4F6F9" fontFamily="var(--font-display)" fontWeight={700} fontSize={isPortrait ? 20 : 19}>
         {event.title}
       </text>
-      <text x="28" y="200" fill={accent} fontFamily="var(--font-mono)" fontSize="12.5" letterSpacing="0.5">
+      <text x="28" y={isPortrait ? 400 : 200} fill={accent} fontFamily="var(--font-mono)" fontSize="12.5" letterSpacing="0.5">
         {fmtDate(event.start_date).toUpperCase()}
       </text>
     </svg>
@@ -134,6 +160,13 @@ export default function PublicDashboard({ events }: { events: EventWithLocation[
   const [refMonth, setRefMonth] = useState(new Date());
   const [selectedEvent, setSelectedEvent] = useState<EventWithLocation | null>(null);
   const [query, setQuery] = useState("");
+
+  useEffect(() => {
+    const applyCollapse = () => setCollapsed(window.innerWidth < 768);
+    applyCollapse();
+    window.addEventListener("resize", applyCollapse);
+    return () => window.removeEventListener("resize", applyCollapse);
+  }, []);
 
   const filtered = useMemo(() => {
     return events.filter((e) => {
@@ -203,25 +236,25 @@ export default function PublicDashboard({ events }: { events: EventWithLocation[
       </div>
 
       <div style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column" }}>
-        <div style={{ padding: "16px 26px", display: "flex", alignItems: "center", justifyContent: "space-between", borderBottom: "1px solid var(--line)" }}>
+        <div style={{ padding: "14px 16px", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10, flexWrap: "wrap", borderBottom: "1px solid var(--line)" }}>
           <div>
             <div style={{ fontFamily: "var(--font-display)", fontWeight: 600, fontSize: 16 }}>
               {view === "painel" ? "Painel" : view === "calendario" ? "Calendário de Eventos" : "Eventos"}
             </div>
             <div style={{ fontSize: 11.5, color: "var(--ink-dim)" }}>Esportivos e sociais · Clube Asbemge</div>
           </div>
-          <div style={{ display: "flex", alignItems: "center", gap: 10, background: "var(--bg)", border: "1px solid var(--line-strong)", borderRadius: 8, padding: "7px 12px" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 10, background: "var(--bg)", border: "1px solid var(--line-strong)", borderRadius: 8, padding: "7px 12px", flex: "1 1 180px", minWidth: 0, maxWidth: 320 }}>
             <Search size={14} color="var(--ink-dim)" />
             <input
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder="Buscar evento..."
-              style={{ background: "transparent", border: "none", outline: "none", color: "var(--ink)", fontSize: 13, width: 160 }}
+              style={{ background: "transparent", border: "none", outline: "none", color: "var(--ink)", fontSize: 13, width: "100%", minWidth: 0 }}
             />
           </div>
         </div>
 
-        <div className="abd-scroll" style={{ padding: "22px 26px", overflowY: "auto" }}>
+        <div className="abd-scroll" style={{ padding: "18px 16px", overflowY: "auto" }}>
           {view === "painel" && (
             <PainelView
               events={events}
@@ -300,7 +333,7 @@ function PainelView({
 }) {
   return (
     <div>
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 14, marginBottom: 20 }}>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(150px, 1fr))", gap: 14, marginBottom: 20 }}>
         <Kpi label="Eventos cadastrados" value={events.length} />
         <Kpi label="Esportivos" value={esportivosCount} accent="var(--gold-600)" />
         <Kpi label="Sociais" value={sociaisCount} accent="var(--navy-700)" />
@@ -309,7 +342,7 @@ function PainelView({
       <div style={{ fontSize: 12, fontWeight: 600, color: "var(--ink-dim)", textTransform: "uppercase", letterSpacing: ".04em", marginBottom: 12 }}>
         Em destaque
       </div>
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 12 }}>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: 12 }}>
         {upcoming.slice(0, 6).map((ev) => (
           <div
             key={ev.id}
@@ -438,32 +471,59 @@ function AnnualView({ events, year, onOpenMonth }: { events: EventWithLocation[]
     return counts;
   }, [events, year]);
 
-  const max = Math.max(1, ...countsByMonth.map((c) => c.esportivo + c.social));
-
   return (
     <div className="abd-card" style={{ padding: 18 }}>
       <div style={{ fontFamily: "var(--font-display)", fontSize: 17, fontWeight: 600, marginBottom: 16 }}>Panorama {year}</div>
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 12 }}>
+      <div className="abd-panorama-grid" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(110px, 1fr))", gap: 10 }}>
         {MONTH_NAMES.map((name, m) => {
           const c = countsByMonth[m];
           const total = c.esportivo + c.social;
+          const active = total > 0;
           return (
-            <div
+            <button
               key={m}
               onClick={() => onOpenMonth(m)}
-              style={{ border: "1px solid var(--line)", borderRadius: 10, padding: 12, cursor: "pointer" }}
+              style={{
+                border: "1px solid var(--line)", borderRadius: 10, padding: "10px 12px", cursor: "pointer",
+                background: "var(--surface)", textAlign: "left", opacity: active ? 1 : 0.55, fontFamily: "inherit",
+              }}
               onMouseEnter={(e) => (e.currentTarget.style.borderColor = "var(--line-strong)")}
               onMouseLeave={(e) => (e.currentTarget.style.borderColor = "var(--line)")}
             >
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
-                <div style={{ fontSize: 13, fontWeight: 600 }}>{name}</div>
-                <div style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: "var(--ink-dim)" }}>{total}</div>
+              <div style={{ fontSize: 12.5, fontWeight: 600, marginBottom: 6 }}>{name.slice(0, 3)}</div>
+              <div
+                style={{
+                  fontFamily: "var(--font-mono)", fontSize: 20, fontWeight: 500,
+                  color: active ? "var(--ink)" : "var(--ink-dim)", marginBottom: active ? 8 : 0,
+                }}
+              >
+                {total}
               </div>
-              <div style={{ display: "flex", gap: 3, marginTop: 10, height: 28, alignItems: "flex-end" }}>
-                <div style={{ flex: 1, height: `${(c.esportivo / max) * 100}%`, minHeight: c.esportivo ? 4 : 0, background: "var(--gold-500)", borderRadius: 2 }} />
-                <div style={{ flex: 1, height: `${(c.social / max) * 100}%`, minHeight: c.social ? 4 : 0, background: "var(--navy-700)", borderRadius: 2 }} />
-              </div>
-            </div>
+              {active && (
+                <div style={{ display: "flex", gap: 5, flexWrap: "wrap" }}>
+                  {c.esportivo > 0 && (
+                    <span
+                      style={{
+                        display: "inline-flex", alignItems: "center", gap: 3, background: "var(--gold-100)",
+                        color: "var(--gold-700)", fontSize: 10.5, fontWeight: 600, padding: "2px 6px", borderRadius: 999,
+                      }}
+                    >
+                      <Trophy size={10} /> {c.esportivo}
+                    </span>
+                  )}
+                  {c.social > 0 && (
+                    <span
+                      style={{
+                        display: "inline-flex", alignItems: "center", gap: 3, background: "var(--navy-050)",
+                        color: "var(--navy-700)", fontSize: 10.5, fontWeight: 600, padding: "2px 6px", borderRadius: 999,
+                      }}
+                    >
+                      <PartyPopper size={10} /> {c.social}
+                    </span>
+                  )}
+                </div>
+              )}
+            </button>
           );
         })}
       </div>
@@ -478,7 +538,7 @@ function AnnualView({ events, year, onOpenMonth }: { events: EventWithLocation[]
 function EventosGrid({ events, onSelect }: { events: EventWithLocation[]; onSelect: (e: EventWithLocation) => void }) {
   const sorted = [...events].sort((a, b) => a.start_date.localeCompare(b.start_date));
   return (
-    <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 14 }}>
+    <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: 14 }}>
       {sorted.map((ev) => (
         <div
           key={ev.id}
@@ -508,15 +568,16 @@ function EventosGrid({ events, onSelect }: { events: EventWithLocation[]; onSele
 function EventSpotlight({ event, onClose }: { event: EventWithLocation; onClose: () => void }) {
   return (
     <div
+      className="abd-spotlight-overlay"
       style={{
         position: "fixed", inset: 0, background: "rgba(6,27,51,0.55)", display: "flex",
         alignItems: "center", justifyContent: "center", zIndex: 50, padding: 20,
       }}
       onClick={onClose}
     >
-      <div className="abd-root abd-scroll" style={{ width: 480, maxHeight: "88vh", overflowY: "auto", display: "block" }} onClick={(e) => e.stopPropagation()}>
+      <div className="abd-root abd-scroll abd-spotlight" style={{ maxHeight: "88vh", overflowY: "auto", display: "block" }} onClick={(e) => e.stopPropagation()}>
         <div style={{ position: "relative" }}>
-          <EventArt event={event} height={220} />
+          <EventArt event={event} orientation="portrait" />
           <button className="abd-icon-btn" onClick={onClose} style={{ position: "absolute", top: 14, right: 14, background: "rgba(6,27,51,0.5)", border: "none", color: "#fff" }}>
             <X size={15} />
           </button>

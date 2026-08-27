@@ -36,19 +36,24 @@ const MONTH_NAMES = [
    gerado nas cores do clube como placeholder.
    ============================================================ */
 function EventArt({
-  event, height = 190, orientation = "landscape",
+  event, height, aspectRatio, orientation = "landscape",
 }: {
   event: EventWithLocation;
   height?: number;
+  aspectRatio?: string;
   orientation?: "landscape" | "portrait";
 }) {
   const isPortrait = orientation === "portrait";
   // Aspect ratio lives on the wrapper div, never on the <svg> itself — CSS
   // aspect-ratio support on replaced SVG elements is inconsistent (notably
   // older mobile Safari), so the art must fill a pre-sized box instead.
+  // A ratio (rather than a fixed px height) lets the art shrink with the
+  // card itself when a grid drops to more columns on narrow screens.
   const containerStyle = isPortrait
     ? { position: "relative" as const, width: "100%", aspectRatio: "4 / 5", overflow: "hidden" as const }
-    : { position: "relative" as const, width: "100%", height, overflow: "hidden" as const };
+    : height !== undefined
+      ? { position: "relative" as const, width: "100%", height, overflow: "hidden" as const }
+      : { position: "relative" as const, width: "100%", aspectRatio: aspectRatio || "16 / 9", overflow: "hidden" as const };
 
   if (event.attachment_url) {
     return (
@@ -328,7 +333,7 @@ function PainelView({
       <div style={{ fontSize: 12, fontWeight: 600, color: "var(--ink-dim)", textTransform: "uppercase", letterSpacing: ".04em", marginBottom: 12 }}>
         Em destaque
       </div>
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: 12 }}>
+      <div className="abd-destaque-grid">
         {upcoming.slice(0, 6).map((ev) => (
           <div
             key={ev.id}
@@ -338,7 +343,7 @@ function PainelView({
             onMouseEnter={(e) => (e.currentTarget.style.borderColor = "var(--line-strong)")}
             onMouseLeave={(e) => (e.currentTarget.style.borderColor = "var(--line)")}
           >
-            <EventArt event={ev} height={110} />
+            <EventArt event={ev} aspectRatio="16 / 9" />
             <div style={{ padding: 12 }}>
               <div
                 style={{
@@ -540,7 +545,7 @@ function AnnualView({ events, year, onOpenMonth }: { events: EventWithLocation[]
 function EventosGrid({ events, onSelect }: { events: EventWithLocation[]; onSelect: (e: EventWithLocation) => void }) {
   const sorted = [...events].sort((a, b) => a.start_date.localeCompare(b.start_date));
   return (
-    <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: 14 }}>
+    <div className="abd-eventos-grid">
       {sorted.map((ev) => (
         <div
           key={ev.id}
@@ -550,7 +555,7 @@ function EventosGrid({ events, onSelect }: { events: EventWithLocation[]; onSele
           onMouseEnter={(e) => (e.currentTarget.style.borderColor = "var(--line-strong)")}
           onMouseLeave={(e) => (e.currentTarget.style.borderColor = "var(--line)")}
         >
-          <EventArt event={ev} height={130} />
+          <EventArt event={ev} aspectRatio="3 / 2" />
           <div style={{ padding: 14 }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 8 }}>
               <div style={{ fontSize: 13.5, fontWeight: 600, overflowWrap: "break-word", minWidth: 0 }}>{ev.title}</div>

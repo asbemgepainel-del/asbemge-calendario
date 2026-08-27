@@ -243,6 +243,33 @@ body {
   background: var(--gold-500);
   color: #221600;
 }
+.abd-destaque-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 12px;
+}
+.abd-eventos-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 14px;
+}
+@media (max-width: 640px) {
+  .abd-destaque-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 8px !important;
+  }
+  .abd-eventos-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 8px !important;
+  }
+}
+@media (max-width: 400px) {
+  .abd-destaque-grid,
+  .abd-eventos-grid {
+    grid-template-columns: 1fr !important;
+  }
+}
+
 .abd-spotlight-overlay {
   align-items: center;
   padding: 20px;

@@ -333,15 +333,22 @@ function PainelView({
           <div
             key={ev.id}
             className="abd-card"
-            style={{ overflow: "hidden", cursor: "pointer" }}
+            style={{ overflow: "hidden", cursor: "pointer", minWidth: 0 }}
             onClick={() => onSelect(ev)}
             onMouseEnter={(e) => (e.currentTarget.style.borderColor = "var(--line-strong)")}
             onMouseLeave={(e) => (e.currentTarget.style.borderColor = "var(--line)")}
           >
             <EventArt event={ev} height={110} />
             <div style={{ padding: 12 }}>
-              <div style={{ fontSize: 13, fontWeight: 600, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{ev.title}</div>
-              <div style={{ fontSize: 11, color: "var(--ink-dim)", marginTop: 3 }}>
+              <div
+                style={{
+                  fontSize: 13, fontWeight: 600, overflowWrap: "break-word",
+                  display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden",
+                }}
+              >
+                {ev.title}
+              </div>
+              <div style={{ fontSize: 11, color: "var(--ink-dim)", marginTop: 3, overflowWrap: "break-word" }}>
                 {fmtDateMonthShort(ev.start_date)} · {ev.location?.name ?? "—"}
               </div>
             </div>
@@ -355,10 +362,19 @@ function PainelView({
 
 function Kpi({ label, value, sub, accent }: { label: string; value: string | number; sub?: string; accent?: string }) {
   return (
-    <div className="abd-card" style={{ padding: "16px 16px" }}>
+    <div className="abd-card" style={{ padding: "16px 16px", minWidth: 0 }}>
       <div style={{ fontSize: 11.5, color: "var(--ink-dim)", marginBottom: 8, fontWeight: 500 }}>{label}</div>
       <div style={{ fontFamily: "var(--font-mono)", fontSize: 26, fontWeight: 500, color: accent || "var(--ink)" }}>{value}</div>
-      {sub && <div style={{ fontSize: 11, color: "var(--ink-dim)", marginTop: 4, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{sub}</div>}
+      {sub && (
+        <div
+          style={{
+            fontSize: 11, color: "var(--ink-dim)", marginTop: 4, overflowWrap: "break-word",
+            display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden",
+          }}
+        >
+          {sub}
+        </div>
+      )}
     </div>
   );
 }
@@ -529,7 +545,7 @@ function EventosGrid({ events, onSelect }: { events: EventWithLocation[]; onSele
         <div
           key={ev.id}
           className="abd-card"
-          style={{ overflow: "hidden", cursor: "pointer" }}
+          style={{ overflow: "hidden", cursor: "pointer", minWidth: 0 }}
           onClick={() => onSelect(ev)}
           onMouseEnter={(e) => (e.currentTarget.style.borderColor = "var(--line-strong)")}
           onMouseLeave={(e) => (e.currentTarget.style.borderColor = "var(--line)")}
@@ -537,11 +553,11 @@ function EventosGrid({ events, onSelect }: { events: EventWithLocation[]; onSele
           <EventArt event={ev} height={130} />
           <div style={{ padding: 14 }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 8 }}>
-              <div style={{ fontSize: 13.5, fontWeight: 600 }}>{ev.title}</div>
+              <div style={{ fontSize: 13.5, fontWeight: 600, overflowWrap: "break-word", minWidth: 0 }}>{ev.title}</div>
               <CategoryTag category={ev.category} />
             </div>
-            <div style={{ fontSize: 11.5, color: "var(--ink-dim)", marginTop: 6, display: "flex", alignItems: "center", gap: 5 }}>
-              <CalendarDays size={12} /> {fmtDateMonthShort(ev.start_date)} · <MapPin size={12} /> {ev.location?.name ?? "—"}
+            <div style={{ fontSize: 11.5, color: "var(--ink-dim)", marginTop: 6, display: "flex", alignItems: "center", gap: 5, flexWrap: "wrap", overflowWrap: "break-word" }}>
+              <CalendarDays size={12} style={{ flexShrink: 0 }} /> {fmtDateMonthShort(ev.start_date)} · <MapPin size={12} style={{ flexShrink: 0 }} /> {ev.location?.name ?? "—"}
             </div>
           </div>
         </div>

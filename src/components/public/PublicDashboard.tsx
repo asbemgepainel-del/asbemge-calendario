@@ -43,15 +43,16 @@ function EventArt({
   orientation?: "landscape" | "portrait";
 }) {
   const isPortrait = orientation === "portrait";
+  // Aspect ratio lives on the wrapper div, never on the <svg> itself — CSS
+  // aspect-ratio support on replaced SVG elements is inconsistent (notably
+  // older mobile Safari), so the art must fill a pre-sized box instead.
+  const containerStyle = isPortrait
+    ? { position: "relative" as const, width: "100%", aspectRatio: "4 / 5", overflow: "hidden" as const }
+    : { position: "relative" as const, width: "100%", height, overflow: "hidden" as const };
 
   if (event.attachment_url) {
     return (
-      <div
-        style={{
-          position: "relative", width: "100%", overflow: "hidden",
-          ...(isPortrait ? { aspectRatio: "3 / 4" } : { height }),
-        }}
-      >
+      <div style={containerStyle}>
         <Image
           src={event.attachment_url}
           alt={event.title}
@@ -69,47 +70,32 @@ function EventArt({
   const bg1 = isGold ? "#0C2C4F" : "#0A2038";
   const bg2 = isGold ? "#123B63" : "#15406B";
   const accent = "#F0A202";
-  const w = isPortrait ? 320 : 400;
-  const h = isPortrait ? 420 : 220;
 
+  // A single normalized 0-100 canvas, cropped with "slice" to whatever box
+  // it lands in. No text baked into the artwork — the title and date are
+  // always shown as real HTML right next to it, so nothing here can ever
+  // overflow regardless of how long an event title is.
   return (
-    <svg
-      viewBox={`0 0 ${w} ${h}`}
-      width="100%"
-      height={isPortrait ? undefined : height}
-      style={isPortrait ? { display: "block", aspectRatio: `${w} / ${h}` } : { display: "block" }}
-      preserveAspectRatio="xMidYMid slice"
-    >
-      <defs>
-        <linearGradient id={`grad-${event.id}`} x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0%" stopColor={bg1} />
-          <stop offset="100%" stopColor={bg2} />
-        </linearGradient>
-      </defs>
-      <rect width={w} height={h} fill={`url(#grad-${event.id})`} />
-      {[...Array(6)].map((_, i) =>
-        isPortrait ? (
-          <circle key={i} cx={40 + (i % 2) * 240} cy={60 + i * 65} r={i % 2 === 0 ? 70 : 46} fill={accent} opacity="0.06" />
-        ) : (
-          <circle key={i} cx={40 + i * 65} cy={30 + (i % 2) * 150} r={i % 2 === 0 ? 70 : 46} fill={accent} opacity="0.06" />
-        ),
-      )}
-      <rect x="0" y="0" width={w} height={h} fill="none" stroke={accent} strokeOpacity="0.35" strokeWidth="6" />
-      <g transform={isPortrait ? "translate(28,330)" : "translate(28,132)"}>
-        <circle cx="18" cy="18" r="18" fill={accent} opacity="0.16" />
-        <foreignObject x="4" y="4" width="28" height="28">
+    <div style={containerStyle}>
+      <svg viewBox="0 0 100 100" width="100%" height="100%" preserveAspectRatio="xMidYMid slice" style={{ display: "block" }}>
+        <defs>
+          <linearGradient id={`grad-${event.id}`} x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stopColor={bg1} />
+            <stop offset="100%" stopColor={bg2} />
+          </linearGradient>
+        </defs>
+        <rect width="100" height="100" fill={`url(#grad-${event.id})`} />
+        <circle cx="18" cy="20" r="30" fill={accent} opacity="0.07" />
+        <circle cx="85" cy="78" r="24" fill={accent} opacity="0.07" />
+        <rect x="1.5" y="1.5" width="97" height="97" fill="none" stroke={accent} strokeOpacity="0.3" strokeWidth="1.5" />
+        <circle cx="50" cy="50" r="16" fill={accent} opacity="0.14" />
+        <foreignObject x="36" y="36" width="28" height="28">
           <div style={{ width: 28, height: 28, display: "flex", alignItems: "center", justifyContent: "center" }}>
-            <Icon size={16} color={accent} />
+            <Icon size={22} color={accent} />
           </div>
         </foreignObject>
-      </g>
-      <text x="28" y={isPortrait ? 380 : 180} fill="#F4F6F9" fontFamily="var(--font-display)" fontWeight={700} fontSize={isPortrait ? 20 : 19}>
-        {event.title}
-      </text>
-      <text x="28" y={isPortrait ? 400 : 200} fill={accent} fontFamily="var(--font-mono)" fontSize="12.5" letterSpacing="0.5">
-        {fmtDate(event.start_date).toUpperCase()}
-      </text>
-    </svg>
+      </svg>
+    </div>
   );
 }
 
@@ -474,7 +460,7 @@ function AnnualView({ events, year, onOpenMonth }: { events: EventWithLocation[]
   return (
     <div className="abd-card" style={{ padding: 18 }}>
       <div style={{ fontFamily: "var(--font-display)", fontSize: 17, fontWeight: 600, marginBottom: 16 }}>Panorama {year}</div>
-      <div className="abd-panorama-grid" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(110px, 1fr))", gap: 10 }}>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(110px, 1fr))", gap: 10 }}>
         {MONTH_NAMES.map((name, m) => {
           const c = countsByMonth[m];
           const total = c.esportivo + c.social;
@@ -571,11 +557,11 @@ function EventSpotlight({ event, onClose }: { event: EventWithLocation; onClose:
       className="abd-spotlight-overlay"
       style={{
         position: "fixed", inset: 0, background: "rgba(6,27,51,0.55)", display: "flex",
-        alignItems: "center", justifyContent: "center", zIndex: 50, padding: 20,
+        justifyContent: "center", zIndex: 50,
       }}
       onClick={onClose}
     >
-      <div className="abd-root abd-scroll abd-spotlight" style={{ maxHeight: "88vh", overflowY: "auto", display: "block" }} onClick={(e) => e.stopPropagation()}>
+      <div className="abd-root abd-scroll abd-spotlight" style={{ overflowY: "auto", display: "block" }} onClick={(e) => e.stopPropagation()}>
         <div style={{ position: "relative" }}>
           <EventArt event={event} orientation="portrait" />
           <button className="abd-icon-btn" onClick={onClose} style={{ position: "absolute", top: 14, right: 14, background: "rgba(6,27,51,0.5)", border: "none", color: "#fff" }}>
@@ -591,7 +577,7 @@ function EventSpotlight({ event, onClose }: { event: EventWithLocation; onClose:
               </span>
             )}
           </div>
-          <div style={{ fontFamily: "var(--font-display)", fontSize: 21, fontWeight: 700, lineHeight: 1.25 }}>{event.title}</div>
+          <div style={{ fontFamily: "var(--font-display)", fontSize: 21, fontWeight: 700, lineHeight: 1.25, overflowWrap: "break-word" }}>{event.title}</div>
 
           <div style={{ display: "flex", flexDirection: "column", gap: 10, marginTop: 18, paddingTop: 16, borderTop: "1px solid var(--line)" }}>
             <InfoRow icon={CalendarDays} text={event.end_date ? `${fmtDate(event.start_date)} até ${fmtDate(event.end_date)}` : fmtDate(event.start_date)} />

@@ -243,9 +243,16 @@ body {
   background: var(--gold-500);
   color: #221600;
 }
+.abd-spotlight-overlay {
+  align-items: center;
+  padding: 20px;
+}
 .abd-spotlight {
   width: 420px;
   max-width: 92vw;
+  max-height: 88vh;
+  border-radius: 16px;
+  overflow: hidden;
 }
 @media (max-width: 640px) {
   .abd-spotlight-overlay {

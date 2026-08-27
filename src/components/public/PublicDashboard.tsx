@@ -17,6 +17,10 @@ import {
   Menu,
   Search,
   LayoutGrid,
+  Share2,
+  MessageCircle,
+  Copy,
+  Check,
 } from "lucide-react";
 import type { EventCategory, EventWithLocation } from "@/lib/types";
 import { parseDate, todayISO, fmtDate, fmtDateMonthShort, daysUntil } from "@/lib/format";
@@ -585,6 +589,7 @@ function EventSpotlight({ event, onClose }: { event: EventWithLocation; onClose:
       <div className="abd-root abd-scroll abd-spotlight" style={{ overflowY: "auto", display: "block" }} onClick={(e) => e.stopPropagation()}>
         <div style={{ position: "relative" }}>
           <EventArt event={event} orientation="portrait" />
+          <ShareButton event={event} />
           <button className="abd-icon-btn" onClick={onClose} style={{ position: "absolute", top: 14, right: 14, background: "rgba(6,27,51,0.5)", border: "none", color: "#fff" }}>
             <X size={15} />
           </button>
@@ -609,6 +614,83 @@ function EventSpotlight({ event, onClose }: { event: EventWithLocation; onClose:
           {event.description && <div style={{ fontSize: 13.5, color: "var(--ink)", lineHeight: 1.6, marginTop: 16 }}>{event.description}</div>}
         </div>
       </div>
+    </div>
+  );
+}
+
+function buildShareText(event: EventWithLocation) {
+  const date = event.end_date ? `${fmtDate(event.start_date)} até ${fmtDate(event.end_date)}` : fmtDate(event.start_date);
+  const parts = [event.title, date];
+  if (event.location?.name) parts.push(event.location.name);
+  const origin = typeof window !== "undefined" ? window.location.origin : "";
+  return `${parts.join(" · ")} — Clube Asbemge\n${origin}`;
+}
+
+function ShareButton({ event }: { event: EventWithLocation }) {
+  const [open, setOpen] = useState(false);
+  const [copied, setCopied] = useState(false);
+
+  async function handleClick() {
+    if (typeof navigator !== "undefined" && "share" in navigator) {
+      try {
+        await navigator.share({ title: event.title, text: buildShareText(event) });
+      } catch {
+        // user dismissed the native share sheet — nothing to do
+      }
+      return;
+    }
+    setOpen((o) => !o);
+  }
+
+  function shareViaWhatsapp() {
+    window.open(`https://wa.me/?text=${encodeURIComponent(buildShareText(event))}`, "_blank");
+    setOpen(false);
+  }
+
+  async function copyForInstagram() {
+    try {
+      await navigator.clipboard.writeText(buildShareText(event));
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      // clipboard access blocked — user can still select/copy manually
+    }
+  }
+
+  return (
+    <div style={{ position: "absolute", top: 14, right: 56 }}>
+      <button
+        className="abd-icon-btn"
+        onClick={handleClick}
+        style={{ background: "rgba(6,27,51,0.5)", border: "none", color: "#fff" }}
+        aria-label="Compartilhar evento"
+      >
+        <Share2 size={15} />
+      </button>
+      {open && (
+        <>
+          <div style={{ position: "fixed", inset: 0, zIndex: 1 }} onClick={() => setOpen(false)} />
+          <div className="abd-card" style={{ position: "absolute", top: 38, right: 0, width: 190, padding: 6, zIndex: 2, boxShadow: "0 8px 24px rgba(6,27,51,0.18)" }}>
+            <button
+              onClick={shareViaWhatsapp}
+              style={{ display: "flex", alignItems: "center", gap: 10, width: "100%", padding: "9px 10px", borderRadius: 8, border: "none", background: "transparent", cursor: "pointer", fontSize: 13, color: "var(--ink)", fontFamily: "inherit" }}
+              onMouseEnter={(e) => (e.currentTarget.style.background = "var(--bg)")}
+              onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
+            >
+              <MessageCircle size={15} /> WhatsApp
+            </button>
+            <button
+              onClick={copyForInstagram}
+              style={{ display: "flex", alignItems: "center", gap: 10, width: "100%", padding: "9px 10px", borderRadius: 8, border: "none", background: "transparent", cursor: "pointer", fontSize: 13, color: "var(--ink)", fontFamily: "inherit" }}
+              onMouseEnter={(e) => (e.currentTarget.style.background = "var(--bg)")}
+              onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
+            >
+              {copied ? <Check size={15} /> : <Copy size={15} />}
+              {copied ? "Copiado!" : "Copiar p/ Instagram"}
+            </button>
+          </div>
+        </>
+      )}
     </div>
   );
 }
